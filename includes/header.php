@@ -22,6 +22,9 @@
                     </li>
                     <?php if (isLoggedIn()): ?>
                         <li class="nav-item">
+                            <a class="nav-link" href="profile.php">My Profile</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="create-post.php">Create Post</a>
                         </li>
                         <?php if (isAdmin()): ?>

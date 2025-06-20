@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 // Clean input data
 function clean($data) {
@@ -29,36 +29,42 @@ function redirect($page) {
 }
 
 // Upload image
+// Upload image
 function uploadImage($file) {
-    $target_dir = "../assets/uploads/";
+    $uploadDirRelative = "/blog/assets/uploads/";
+    $uploadDirAbsolute = __DIR__ . '/../assets/uploads/';
+
+    // Create directory if not exists
+    if (!is_dir($uploadDirAbsolute)) {
+        mkdir($uploadDirAbsolute, 0755, true);
+    }
+
     $timestamp = time();
-    $target_file = $target_dir . $timestamp . "_" . basename($file["name"]);
-    $uploadOk = 1;
-    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-    
-    // Check if image file is a actual image or fake image
+    $fileName = $timestamp . "_" . basename($file["name"]);
+    $targetFile = $uploadDirAbsolute . $fileName;
+    $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+
     $check = getimagesize($file["tmp_name"]);
-    if($check === false) {
+    if ($check === false) {
         return ["success" => false, "message" => "File is not an image."];
     }
-    
-    // Check file size (limit to 5MB)
+
     if ($file["size"] > 5000000) {
-        return ["success" => false, "message" => "Sorry, your file is too large."];
+        return ["success" => false, "message" => "File too large."];
     }
-    
-    // Allow certain file formats
-    if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif" ) {
-        return ["success" => false, "message" => "Sorry, only JPG, JPEG, PNG & GIF files are allowed."];
+
+    if (!in_array($imageFileType, ["jpg", "jpeg", "png", "gif"])) {
+        return ["success" => false, "message" => "Invalid file format."];
     }
-    
-    // Try to upload file
-    if (move_uploaded_file($file["tmp_name"], $target_file)) {
-        return ["success" => true, "file_path" => "assets/uploads/" . $timestamp . "_" . basename($file["name"])];
+
+    if (move_uploaded_file($file["tmp_name"], $targetFile)) {
+        return ["success" => true, "file_path" => $uploadDirRelative . $fileName];
     } else {
-        return ["success" => false, "message" => "Sorry, there was an error uploading your file."];
+        return ["success" => false, "message" => "Upload failed."];
     }
 }
+
+
 
 // Get all posts
 function getPosts() {
